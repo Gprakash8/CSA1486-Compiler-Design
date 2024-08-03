@@ -1,0 +1,40 @@
+%{
+#include <stdio.h>
+%}
+
+%%
+"<[^>]+>"        { printf("HTML tag: %s\n", yytext); }
+[^<]+            { /* Ignore text outside of tags */ }
+.                { /* Ignore any other characters */ }
+
+%%
+
+int main(int argc, char **argv) {
+    if (argc != 2) {
+        fprintf(stderr, "Usage: %s <input file>\n", argv[0]);
+        return 1;
+    }
+
+    FILE *file = fopen(argv[1], "r");
+    if (!file) {
+        perror("Error opening file");
+        return 1;
+    }
+
+    yyin = file;
+    yylex();
+
+    fclose(file);
+    return 0;
+}
+
+
+
+
+
+
+
+
+lex htmltags.l
+gcc lex.yy.c -o htmltags -ll
+./htmltags sample.html

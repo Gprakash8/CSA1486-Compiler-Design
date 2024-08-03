@@ -1,0 +1,56 @@
+%{
+#include <stdio.h>
+
+int line_number = 1;
+
+void print_line_number() {
+    printf("%4d: ", line_number++);
+}
+%}
+
+%%
+\n                      { printf("\n"); print_line_number(); }
+.                       { putchar(yytext[0]); }
+
+%%
+
+int main(int argc, char **argv) {
+    if (argc != 2) {
+        fprintf(stderr, "Usage: %s <input file>\n", argv[0]);
+        return 1;
+    }
+
+    FILE *file = fopen(argv[1], "r");
+    if (!file) {
+        perror("Error opening file");
+        return 1;
+    }
+
+    yyin = file;
+    print_line_number();  // Print the first line number
+    yylex();
+
+    fclose(file);
+    return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+lex linenumber.l
+gcc lex.yy.c -o linenumber -ll
+./linenumber sample.c

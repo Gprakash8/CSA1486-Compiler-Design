@@ -1,0 +1,84 @@
+%{
+#include <stdio.h>
+#include <ctype.h>
+
+int char_count = 0;
+int line_count = 0;
+int word_count = 0;
+int in_word = 0;
+
+void count_chars(char* yytext);
+%}
+
+%%
+[ \t\n]+        { count_chars(yytext); }
+.               { count_chars(yytext); }
+
+%%
+
+void count_chars(char* yytext) {
+    for (int i = 0; yytext[i] != '\0'; i++) {
+        char_count++;
+        if (yytext[i] == '\n') {
+            line_count++;
+        }
+        if (isspace(yytext[i])) {
+            if (in_word) {
+                word_count++;
+                in_word = 0;
+            }
+        } else {
+            in_word = 1;
+        }
+    }
+}
+
+int main(int argc, char **argv) {
+    if (argc != 2) {
+        fprintf(stderr, "Usage: %s <input file>\n", argv[0]);
+        return 1;
+    }
+
+    FILE *file = fopen(argv[1], "r");
+    if (!file) {
+        perror("Error opening file");
+        return 1;
+    }
+
+    yyin = file;
+    yylex();
+
+    fclose(file);
+
+    // If we ended while in a word, count it as a word
+    if (in_word) {
+        word_count++;
+    }
+
+    printf("Number of characters: %d\n", char_count);
+    printf("Number of lines: %d\n", line_count);
+    printf("Number of words: %d\n", word_count);
+
+    return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+lex count.l
+gcc lex.yy.c -o count -ll
+./count inputfile.txt
+

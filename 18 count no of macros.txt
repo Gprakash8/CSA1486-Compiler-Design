@@ -1,0 +1,53 @@
+%{
+#include <stdio.h>
+
+int macro_count = 0;
+int header_count = 0;
+%}
+
+%%
+"#define"[^\n]*        { macro_count++; }
+"#include"[ \t]*"<"[^\n]*">"   { header_count++; }
+"#include"[ \t]*"\""[^\n]*"\"" { header_count++; }
+.|\n                 { /* Ignore other characters and new lines */ }
+
+%%
+
+int main(int argc, char **argv) {
+    if (argc != 2) {
+        fprintf(stderr, "Usage: %s <input file>\n", argv[0]);
+        return 1;
+    }
+
+    FILE *file = fopen(argv[1], "r");
+    if (!file) {
+        perror("Error opening file");
+        return 1;
+    }
+
+    yyin = file;
+    yylex();
+
+    fclose(file);
+
+    printf("Number of macros defined: %d\n", macro_count);
+    printf("Number of header files included: %d\n", header_count);
+
+    return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+lex macro_header_count.l
+gcc lex.yy.c -o macro_header_count -ll
+./macro_header_count sample.c

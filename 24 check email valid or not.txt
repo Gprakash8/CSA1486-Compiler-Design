@@ -1,0 +1,70 @@
+%{
+#include <stdio.h>
+#include <string.h>
+
+int is_valid_email = 0;
+
+void validate_email(char* yytext) {
+    // Basic email validation regex
+    const char* regex = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
+    is_valid_email = (regexec(&regex, yytext, 0, NULL, 0) == 0);
+}
+%}
+
+email       [a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}
+invalid     [^ \t\n]+
+
+%%
+{email}     { validate_email(yytext); }
+{invalid}   { /* Ignore other words */ }
+[ \t\n]+    { /* Ignore whitespace */ }
+
+%%
+
+int main(int argc, char **argv) {
+    if (argc != 2) {
+        fprintf(stderr, "Usage: %s <input file>\n", argv[0]);
+        return 1;
+    }
+
+    FILE *file = fopen(argv[1], "r");
+    if (!file) {
+        perror("Error opening file");
+        return 1;
+    }
+
+    yyin = file;
+    yylex();
+
+    fclose(file);
+
+    if (is_valid_email) {
+        printf("Valid email address.\n");
+    } else {
+        printf("Invalid email address.\n");
+    }
+
+    return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+lex email_check.l
+gcc lex.yy.c -o email_check -ll
+./email_check input.txt

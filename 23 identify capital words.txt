@@ -1,0 +1,52 @@
+%{
+#include <stdio.h>
+%}
+
+%%
+[A-Z]+        { printf("Capital word: %s\n", yytext); }
+[A-Za-z]+     { /* Ignore non-capital words */ }
+[ \t\n]+      { /* Ignore whitespace */ }
+.             { /* Ignore any other characters */ }
+
+%%
+
+int main(int argc, char **argv) {
+    if (argc == 2) {
+        FILE *file = fopen(argv[1], "r");
+        if (!file) {
+            perror("Error opening file");
+            return 1;
+        }
+        yyin = file;
+    }
+
+    yylex();
+
+    if (yyin != stdin) {
+        fclose(yyin);
+    }
+
+    return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+lex capital_words.l
+gcc lex.yy.c -o capital_words -ll
+./capital_words input.txt
+

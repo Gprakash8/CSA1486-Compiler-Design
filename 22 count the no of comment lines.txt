@@ -1,0 +1,72 @@
+%{
+#include <stdio.h>
+
+int comment_count = 0;
+FILE *outfile;
+
+%}
+
+%%
+"/*"[^*]*"*"*([^*/][^*]*"*"*)*"*/" {
+    comment_count++;
+    // Skip multi-line comments
+}
+"//"[^\n]* {
+    comment_count++;
+    // Skip single-line comments
+}
+.|\n {
+    fputc(yytext[0], outfile);
+}
+
+%%
+
+int main(int argc, char **argv) {
+    if (argc != 3) {
+        fprintf(stderr, "Usage: %s <input file> <output file>\n", argv[0]);
+        return 1;
+    }
+
+    FILE *infile = fopen(argv[1], "r");
+    if (!infile) {
+        perror("Error opening input file");
+        return 1;
+    }
+
+    outfile = fopen(argv[2], "w");
+    if (!outfile) {
+        perror("Error opening output file");
+        fclose(infile);
+        return 1;
+    }
+
+    yyin = infile;
+    yylex();
+
+    fclose(infile);
+    fclose(outfile);
+
+    printf("Number of comment lines: %d\n", comment_count);
+
+    return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+lex remove_comments.l
+gcc lex.yy.c -o remove_comments -ll
+./remove_comments input.c output.c

@@ -1,0 +1,60 @@
+%{
+#include <stdio.h>
+%}
+
+digit   [0-9]
+int     {digit}+
+float   {digit}+"."{digit}*|{digit}*"."{digit}+
+char    \'.\'|\'.*\'  /* Character constants */
+hex     0[xX][0-9a-fA-F]+
+exp     [eE][+-]?{digit}+
+number  ({digit}+|{digit}*"."{digit}+|{digit}+"."{digit}*)({exp})?
+
+%%
+"#"[^\n]*                   { /* Ignore preprocessor directives */ }
+\"([^\\\n]|(\\.))*?\"       { /* Ignore string constants */ }
+{int}                       { printf("Integer constant: %s\n", yytext); }
+{hex}                       { printf("Hexadecimal constant: %s\n", yytext); }
+{float}                     { printf("Floating-point constant: %s\n", yytext); }
+{char}                      { printf("Character constant: %s\n", yytext); }
+[ \t\n]+                    { /* Ignore whitespaces */ }
+.                           { /* Ignore any other character */ }
+
+%%
+
+int main(int argc, char **argv) {
+    if (argc != 2) {
+        fprintf(stderr, "Usage: %s <input file>\n", argv[0]);
+        return 1;
+    }
+
+    FILE *file = fopen(argv[1], "r");
+    if (!file) {
+        perror("Error opening file");
+        return 1;
+    }
+
+    yyin = file;
+    yylex();
+
+    fclose(file);
+    return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+lex constants.l
+gcc lex.yy.c -o constants -ll
+./constants sample.c
